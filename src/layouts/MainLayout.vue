@@ -1,116 +1,116 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+  <q-layout view="hhh LpR lfr">
 
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
+    <div>
+    <q-tabs
+      v-model="activeTab"
+      dense
+      align="left"
+      class="bg-indigo text-grey-2"
+      inline-label
+      active-color="white"
     >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
+      <q-tab
+        v-for="(tab, index) in tabs"
+        :key="index"
+        :name="tab.name"
+        :label="tab.label"
+      >
+        <q-btn
+          v-if="tab.closable"
+          icon="close"
+          flat
+          round
+          size="0.5rem"
+          @click.stop="closeTab(index)"
+          class="q-ml-md"
         />
-      </q-list>
-    </q-drawer>
+      </q-tab>
+    </q-tabs>
 
-    <q-page-container>
-      <router-view />
-    </q-page-container>
+    <div class="q-pa-lg">
+      <component :is="currentTabComponent"/>
+    </div>
+
+    <q-btn label="New tab" @click="addTab(Math.random().toString())"/>
+  </div>
+
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
+import { ref, computed } from 'vue';
+import MeetingsPage from 'src/pages/MeetingsPage.vue';
+import OrdersPage from 'src/pages/OrdersPage.vue';
 
-export default defineComponent({
-  name: 'MainLayout',
+interface Tab {
+  name: string;
+  label: string;
+  closable: boolean;
+  component: string;
+}
+
+export default {
 
   components: {
-    EssentialLink,
+    MeetingsPage,
+    OrdersPage,
   },
 
   setup() {
-    const leftDrawerOpen = ref(false);
+    const tabs = ref([
+      {
+        name: 'orders',
+        label: 'Orders',
+        closable: false,
+        component: 'OrdersPage',
+      },
+      {
+        name: 'meetings',
+        label: 'Meetings',
+        closable: false,
+        component: 'MeetingsPage',
+      },
+    ]);
+    const activeTab = ref('orders');
+
+    const getTabIndexByName = (tabsArray: Tab[], tabName: string) => (
+      tabsArray.findIndex((tab) => tab.name === tabName)
+    );
+
+    const currentTabComponent = computed(() => {
+      const activeTabIndex = getTabIndexByName(tabs.value, activeTab.value);
+      return tabs.value[activeTabIndex].component;
+    });
+
+    const closeTab = (index: number) => {
+      const activeTabIndex = getTabIndexByName(tabs.value, activeTab.value);
+      if (activeTabIndex === index) {
+        activeTab.value = tabs.value.slice(-2)[0].name;
+      }
+      tabs.value.splice(index, 1);
+    };
+
+    const addTab = (id: string) => {
+      const newTab = {
+        name: `order${id}`,
+        label: `Order ${id}`,
+        closable: true,
+        component: `OrderPage${id}`,
+      };
+      tabs.value.push(newTab);
+      activeTab.value = newTab.name;
+    };
 
     return {
-      linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
-      },
+      activeTab,
+      tabs,
+      currentTabComponent,
+      closeTab,
+      addTab,
     };
   },
-});
+};
+
 </script>
