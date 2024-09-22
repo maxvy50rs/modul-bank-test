@@ -58,7 +58,7 @@ module.exports = configure((/* ctx */) => ({
 
     // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-    // publicPath: '/',
+    publicPath: '/module-bank-test',
     // analyze: true,
     // env: {},
     // rawDefine: {}
