@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-circular-progress
-      v-if="store.isLoading"
+      v-if="orders.length === 0"
       indeterminate
       size="90px"
       :thickness="0.2"
@@ -11,9 +11,9 @@
       class="q-ma-a"
     />
     <q-table
-      v-if="!store.isLoading"
+      v-if="orders.length"
       title="Orders"
-      :rows="store.data"
+      :rows="orders"
       :columns="columns"
       row-key="id"
     />
@@ -21,7 +21,9 @@
 </template>
 
 <script>
-import { useDataStore } from 'src/stores/dataStore';
+import { useOrderStore } from 'src/stores/orders';
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 
 export default {
   setup() {
@@ -71,13 +73,15 @@ export default {
       },
     ];
 
-    const store = useDataStore();
+    const store = useOrderStore();
 
-    store.fetchOrderList();
+    onMounted(store.dispatchGetOrders);
+
+    const { orders } = storeToRefs(store);
 
     return {
       columns,
-      store,
+      orders,
     };
   },
 };
