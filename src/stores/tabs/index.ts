@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { LocalStorage } from 'quasar';
+import { ref, watch } from 'vue';
 import { Router } from 'vue-router';
 
 type Tab = {
@@ -9,7 +10,7 @@ type Tab = {
 }
 
 export const useTabsStore = defineStore('tabsStore', () => {
-  const tabs = ref<Tab[]>([
+  const initialState: Tab[] = [
     {
       name: '/orders',
       label: 'Orders',
@@ -20,7 +21,15 @@ export const useTabsStore = defineStore('tabsStore', () => {
       label: 'Meetings',
       closable: false,
     },
-  ]);
+  ];
+
+  const tabs = ref<Tab[]>(LocalStorage.getItem('tabs') || initialState);
+
+  watch(tabs, (_, newTabs) => {
+    LocalStorage.setItem('tabs', newTabs);
+  }, {
+    deep: true,
+  });
 
   function addNewTab(tab: Tab) {
     tabs.value.push(tab);
