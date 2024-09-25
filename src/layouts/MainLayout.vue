@@ -25,7 +25,7 @@
           flat
           round
           size="0.5rem"
-          @click.prevent="closeTabByName(tab.name, router)"
+          @click.prevent="closeTab(tab.name)"
           class="q-ml-md"
         />
       </q-route-tab>
@@ -44,17 +44,26 @@
 
 import { useTabsStore } from 'src/stores/tabs';
 import { useRouter } from 'vue-router';
+import { Tab } from '../stores/tabs';
 
 export default {
 
   setup() {
-    const { tabs, closeTabByName } = useTabsStore();
+    const { tabs, removeTabByName } = useTabsStore();
     const router = useRouter();
+
+    function closeTab(name: Tab['name']) {
+      const path = router.currentRoute.value.fullPath;
+      if (path === name) {
+        router.push(router.options.history.state.back as string);
+      }
+      removeTabByName(name);
+    }
 
     return {
       tabs,
       router,
-      closeTabByName,
+      closeTab,
     };
   },
 };

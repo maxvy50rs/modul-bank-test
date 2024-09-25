@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia';
 import { LocalStorage } from 'quasar';
 import { ref, watch } from 'vue';
-import { Router } from 'vue-router';
 
-type Tab = {
+export type Tab = {
   name: string;
   label: string;
   closable: boolean;
@@ -31,22 +30,25 @@ export const useTabsStore = defineStore('tabsStore', () => {
     deep: true,
   });
 
+  function checkTabIfExist(name: Tab['name']) {
+    const idx = tabs.value.findIndex((el) => (el.name === name));
+    return idx > -1;
+  }
+
   function addNewTab(tab: Tab) {
+    const isExist = checkTabIfExist(tab.name);
+    if (isExist) return;
     tabs.value.push(tab);
   }
 
-  function closeTabByName(name: Tab['name'], router: Router) {
-    const path = router.currentRoute.value.fullPath;
+  function removeTabByName(name: Tab['name']) {
     const idx = tabs.value.findIndex((el) => (el.name === name));
-    if (path === name) {
-      router.push(router.options.history.state.back as string);
-    }
     tabs.value.splice(idx, 1);
   }
 
   return {
     tabs,
     addNewTab,
-    closeTabByName,
+    removeTabByName,
   };
 });
