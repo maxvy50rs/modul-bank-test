@@ -1,20 +1,23 @@
 <template>
   <q-layout view="hhh LpR lfr">
 
-    <div>
+  <div>
+
     <q-tabs
-      v-model="activeTab"
       dense
       align="left"
       class="bg-indigo text-grey-2"
       inline-label
       active-color="white"
     >
-      <q-tab
+      <q-route-tab
         v-for="(tab, index) in tabs"
         :key="index"
         :name="tab.name"
+        :to="`${tab.name}`"
         :label="tab.label"
+        exact
+        replace
       >
         <q-btn
           v-if="tab.closable"
@@ -22,17 +25,16 @@
           flat
           round
           size="0.5rem"
-          @click.stop="closeTab(index)"
+          @click.prevent="closeTabByName(tab.name, router)"
           class="q-ml-md"
         />
-      </q-tab>
+      </q-route-tab>
     </q-tabs>
 
-    <div class="q-pa-lg">
-      <component :is="currentTabComponent"/>
-    </div>
+    <q-page-container>
+      <router-view></router-view>
+    </q-page-container>
 
-    <q-btn label="New tab" @click="addTab(Math.random().toString())"/>
   </div>
 
   </q-layout>
@@ -40,75 +42,19 @@
 
 <script lang="ts">
 
-import { ref, computed } from 'vue';
-import MeetingsPage from 'src/pages/MeetingsPage.vue';
-import OrdersPage from 'src/pages/OrdersPage.vue';
-
-interface Tab {
-  name: string;
-  label: string;
-  closable: boolean;
-  component: string;
-}
+import { useTabsStore } from 'src/stores/tabs';
+import { useRouter } from 'vue-router';
 
 export default {
 
-  components: {
-    MeetingsPage,
-    OrdersPage,
-  },
-
   setup() {
-    const tabs = ref([
-      {
-        name: 'orders',
-        label: 'Orders',
-        closable: false,
-        component: 'OrdersPage',
-      },
-      {
-        name: 'meetings',
-        label: 'Meetings',
-        closable: false,
-        component: 'MeetingsPage',
-      },
-    ]);
-    const activeTab = ref('orders');
-
-    const getTabIndexByName = (tabsArray: Tab[], tabName: string) => (
-      tabsArray.findIndex((tab) => tab.name === tabName)
-    );
-
-    const currentTabComponent = computed(() => {
-      const activeTabIndex = getTabIndexByName(tabs.value, activeTab.value);
-      return tabs.value[activeTabIndex].component;
-    });
-
-    const closeTab = (index: number) => {
-      const activeTabIndex = getTabIndexByName(tabs.value, activeTab.value);
-      if (activeTabIndex === index) {
-        activeTab.value = tabs.value.slice(-2)[0].name;
-      }
-      tabs.value.splice(index, 1);
-    };
-
-    const addTab = (id: string) => {
-      const newTab = {
-        name: `order${id}`,
-        label: `Order ${id}`,
-        closable: true,
-        component: `OrderPage${id}`,
-      };
-      tabs.value.push(newTab);
-      activeTab.value = newTab.name;
-    };
+    const { tabs, closeTabByName } = useTabsStore();
+    const router = useRouter();
 
     return {
-      activeTab,
       tabs,
-      currentTabComponent,
-      closeTab,
-      addTab,
+      router,
+      closeTabByName,
     };
   },
 };

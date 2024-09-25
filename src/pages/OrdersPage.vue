@@ -16,6 +16,7 @@
       :rows="orders"
       :columns="columns"
       row-key="id"
+      @row-click.stop="onRowClick"
     />
   </div>
 </template>
@@ -24,6 +25,8 @@
 import { useOrderStore } from 'src/stores/orders';
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import { useTabsStore } from 'src/stores/tabs';
 
 export default {
   setup() {
@@ -74,14 +77,25 @@ export default {
     ];
 
     const store = useOrderStore();
-
     onMounted(store.dispatchGetOrders);
-
     const { orders } = storeToRefs(store);
+    const router = useRouter();
+    const tabsStore = useTabsStore();
+
+    function onRowClick(e, row) {
+      const tabName = `/orders/${row.id}`;
+      tabsStore.addNewTab({
+        name: tabName,
+        label: `Order #${row.id}`,
+        closable: true,
+      });
+      router.push(tabName);
+    }
 
     return {
       columns,
       orders,
+      onRowClick,
     };
   },
 };
