@@ -16,7 +16,18 @@
       :columns="columns"
       row-key="id"
       @row-click.stop="onRowClick"
-    />
+      >
+      <template v-slot:body-cell-state="props">
+        <q-td :props="props">
+          <div>
+            <q-badge
+              :color="stateToBadgeMap.get(props.row.state).color"
+              :label="stateToBadgeMap.get(props.row.state).label"
+            />
+          </div>
+        </q-td>
+      </template>
+    </q-table>
   </q-page>
 </template>
 
@@ -67,7 +78,6 @@ export default {
         label: 'State',
         field: 'state',
         sortable: true,
-        format: (val) => (val === 'init' ? 'Initial' : ''),
       },
       {
         name: 'contact',
@@ -77,6 +87,12 @@ export default {
         format: (val) => `+${val}`,
       },
     ];
+
+    const stateToBadgeMap = new Map([
+      ['init', { label: 'Initial', color: 'red' }],
+      ['finish', { label: 'Finished', color: 'green' }],
+      ['progress', { label: 'WIP', color: 'orange' }],
+    ]);
 
     const store = useOrderStore();
     onMounted(store.dispatchGetOrders);
@@ -97,6 +113,7 @@ export default {
     return {
       columns,
       orders,
+      stateToBadgeMap,
       onRowClick,
     };
   },
