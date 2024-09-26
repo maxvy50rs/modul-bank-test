@@ -31,7 +31,7 @@
       </q-route-tab>
     </q-tabs>
 
-    <q-page-container>
+    <q-page-container style="max-width: 1280px; margin: auto; margin-top: 2rem;">
       <router-view></router-view>
     </q-page-container>
 

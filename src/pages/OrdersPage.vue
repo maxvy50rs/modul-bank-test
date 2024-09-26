@@ -1,16 +1,15 @@
 <template>
-  <div class="q-pa-md">
+  <q-page class="q-pa-md row justify-center items-start">
     <q-circular-progress
       v-if="orders.length === 0"
       indeterminate
       size="90px"
       :thickness="0.2"
       color="indigo"
-      center-color="grey-2"
-      track-color="transparent"
-      class="q-ma-a"
+      center-color="grey-4"
+      track-color="grey-2"
     />
-    <q-table
+    <q-table class="col sticky-header-column-table"
       v-if="orders.length"
       title="Orders"
       :rows="orders"
@@ -18,7 +17,7 @@
       row-key="id"
       @row-click.stop="onRowClick"
     />
-  </div>
+  </q-page>
 </template>
 
 <script>
@@ -35,14 +34,13 @@ export default {
         name: 'number',
         required: true,
         label: '#',
-        align: 'left',
+        align: 'center',
         field: (row) => row.num,
         format: (val) => `${val}`,
         sortable: true,
       },
       {
         name: 'product',
-        align: 'center',
         label: 'Product',
         field: 'stg',
         sortable: true,
@@ -53,7 +51,10 @@ export default {
         label: 'Date',
         field: 'initiated_at',
         sortable: true,
-        format: (val) => new Date(val).toISOString().split('T')[0],
+        format: (val) => new Date(val).toISOString()
+          .split('T')
+          .join(', ')
+          .slice(0, -8),
       },
       {
         name: 'client',
@@ -73,6 +74,7 @@ export default {
         label: 'Contact',
         field: 'person_phone',
         sortable: false,
+        format: (val) => `+${val}`,
       },
     ];
 
@@ -86,7 +88,7 @@ export default {
       const tabName = `/orders/${row.id}`;
       tabsStore.addNewTab({
         name: tabName,
-        label: `Order #${row.id}`,
+        label: `Order #${row.num}`,
         closable: true,
       });
       router.push(tabName);
@@ -100,3 +102,39 @@ export default {
   },
 };
 </script>
+
+<style>
+  .sticky-header-column-table {
+    max-height: 900px;
+    max-width: 1440px;
+  }
+  .sticky-header-column-table td:first-child {
+    background-color: #f3f3f3;
+  }
+  .sticky-header-column-table tr th {
+    position: sticky;
+    z-index: 2;
+    background: #f3f3f3;
+  }
+  .sticky-header-column-table thead tr:last-child th {
+    top: 48px;
+    z-index: 3;
+  }
+  .sticky-header-column-table thead tr:first-child th {
+    top: 0;
+    z-index: 1;
+  }
+  .sticky-header-column-table tr:first-child th:first-child {
+    z-index: 3;
+  }
+  .sticky-header-column-table td:first-child {
+    z-index: 1;
+  }
+  .sticky-header-column-table td:first-child, .sticky-header-column-table th:first-child {
+    position: sticky;
+    left: 0;
+  }
+  .sticky-header-column-table tbody {
+    scroll-margin-top: 48px;
+  }
+</style>
