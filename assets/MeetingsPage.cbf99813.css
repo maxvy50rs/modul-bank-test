@@ -1,0 +1,1 @@
+.sticky-header-column-table{max-height:900px;max-width:1440px}.sticky-header-column-table tr th{position:sticky;z-index:2;background:#f3f3f3}.sticky-header-column-table thead tr:last-child th{top:48px;z-index:3}.sticky-header-column-table thead tr:first-child th{top:0;z-index:1}
