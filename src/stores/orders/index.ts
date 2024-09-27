@@ -2,17 +2,17 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { API } from 'src/services';
 import { APIResponse } from 'src/services/types';
-import { Order } from '../../services/orders/types';
+import { Order, OrderExtended } from '../../services/orders/types';
 
 export const useOrderStore = defineStore('orderStore', () => {
   const orders = ref<Order[]>([]);
-  const orderDetails = ref<Order | null>(null);
+  const orderDetails = ref<OrderExtended | null>(null);
 
   function initOrders(data: Order[]) {
     orders.value = data;
   }
 
-  function initOrderDetails(data: Order) {
+  function initOrderDetails(data: OrderExtended) {
     orderDetails.value = data;
   }
 
@@ -42,7 +42,7 @@ export const useOrderStore = defineStore('orderStore', () => {
     return null;
   }
 
-  async function dispatchGetOrderById(id: Order['id']): Promise<APIResponse<null>> {
+  async function dispatchGetOrderById(id: OrderExtended['id']): Promise<APIResponse<null>> {
     try {
       const { status, data } = await API.orders.getOrderById(id);
       if (status === 200) {
