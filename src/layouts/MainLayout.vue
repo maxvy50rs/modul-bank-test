@@ -55,7 +55,7 @@ export default {
     function closeTab(name: Tab['name']) {
       const path = router.currentRoute.value.fullPath;
       if (path === name) {
-        router.push(router.options.history.state.back as string);
+        router.push(router.options.history.state.back as string || '/orders');
       }
       removeTabByName(name);
     }
