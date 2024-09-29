@@ -32,7 +32,7 @@
     </q-tabs>
 
     <q-page-container style="max-width: 1280px; margin: auto; margin-top: 2rem;">
-      <router-view></router-view>
+      <router-view :key="$route.fullPath"></router-view>
     </q-page-container>
 
   </div>
@@ -55,7 +55,7 @@ export default {
     function closeTab(name: Tab['name']) {
       const path = router.currentRoute.value.fullPath;
       if (path === name) {
-        router.push(router.options.history.state.back as string || '/orders');
+        router.push('/orders');
       }
       removeTabByName(name);
     }

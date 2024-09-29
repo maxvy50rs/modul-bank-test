@@ -5,7 +5,7 @@
     >
 
     <q-circular-progress
-      v-if="orderDetails === null"
+      v-if="!orderDetails"
       indeterminate
       size="90px"
       :thickness="0.2"
@@ -14,7 +14,7 @@
       track-color="grey-2"
     />
 
-    <div class="q-gutter-sm q-pa-lg col-12" v-if="!(orderDetails === null)">
+    <div class="q-gutter-sm q-pa-lg col-12" v-if="!!orderDetails">
       <q-badge
         outline
         color="orange"
@@ -30,7 +30,7 @@
     </div>
 
     <q-form
-      v-if="!(orderDetails === null)"
+      v-if="!!orderDetails"
       @submit="onSubmit"
       @reset="onReset"
       class="col-12 row justify-center items-start"
@@ -125,24 +125,22 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useOrderStore } from 'src/stores/orders';
 
 export default {
   setup() {
     const store = useOrderStore();
-    const router = useRouter();
-    const currentPath = router.currentRoute.value.fullPath;
-    const orderId = currentPath.split('/')[2];
-    onMounted(() => store.dispatchGetOrderById(orderId));
-
-    const { orderDetails } = storeToRefs(store);
+    const route = useRoute();
+    const orderId = ref(route.params.id as string);
+    onMounted(() => store.dispatchGetOrderById(orderId.value));
+    const { orderDetailsMap } = storeToRefs(store);
 
     return {
 
-      orderDetails,
+      orderDetails: computed(() => orderDetailsMap.value.get(orderId.value)),
 
       stateToBadgeMap: new Map([
         ['init', { label: 'Initial', color: 'red' }],

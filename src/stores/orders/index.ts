@@ -6,14 +6,14 @@ import { Order, OrderExtended } from '../../services/orders/types';
 
 export const useOrderStore = defineStore('orderStore', () => {
   const orders = ref<Order[]>([]);
-  const orderDetails = ref<OrderExtended | null>(null);
+  const orderDetailsMap = ref<Map<OrderExtended['id'], OrderExtended>>(new Map());
 
   function initOrders(data: Order[]) {
     orders.value = data;
   }
 
   function initOrderDetails(data: OrderExtended) {
-    orderDetails.value = data;
+    orderDetailsMap.value.set(data.id, data);
   }
 
   function addNewOrder(order: Order) {
@@ -109,7 +109,7 @@ export const useOrderStore = defineStore('orderStore', () => {
 
   return {
     orders,
-    orderDetails,
+    orderDetailsMap,
     initOrders,
     removeOrder,
     addNewOrder,
