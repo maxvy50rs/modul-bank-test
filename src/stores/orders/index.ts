@@ -9,15 +9,16 @@ export const useOrderStore = defineStore('orderStore', () => {
   const orderDetailsMap = ref<Map<OrderExtended['id'], OrderExtended>>(new Map());
 
   function initOrders(data: Order[]) {
-    orders.value = data;
+    orders.value = [...data];
   }
 
   function initOrderDetails(data: OrderExtended) {
     orderDetailsMap.value.set(data.id, data);
   }
 
-  function addNewOrder(order: Order) {
-    orders.value.push(order);
+  function addNewOrder(order: OrderExtended) {
+    orders.value.push(order as Order);
+    orderDetailsMap.value.set(order.id, order);
   }
 
   function removeOrder(id: Order['id']) {
@@ -44,6 +45,7 @@ export const useOrderStore = defineStore('orderStore', () => {
 
   async function dispatchGetOrderById(id: OrderExtended['id']): Promise<APIResponse<null>> {
     try {
+      if (orderDetailsMap.value.get(id)) return null;
       const { status, data } = await API.orders.getOrderById(id);
       if (status === 200) {
         initOrderDetails(data);
@@ -52,6 +54,21 @@ export const useOrderStore = defineStore('orderStore', () => {
       //
     }
     return null;
+  }
+
+  async function dispatchCreateNewOrder(order: OrderExtended) {
+    addNewOrder(order);
+  }
+
+  async function dispatchUpdateOrder(o: OrderExtended) {
+    const index = orders.value.findIndex((s) => s.id === o.id);
+    if (index === -1) return;
+    orders.value.splice(index, 1, o);
+    orderDetailsMap.value.set(o.id, o);
+  }
+
+  async function dispatchDeleteOrder(id: Order['id']) {
+    removeOrder(id);
   }
 
   /*   async function dispatchCreateOrder(
@@ -110,11 +127,10 @@ export const useOrderStore = defineStore('orderStore', () => {
   return {
     orders,
     orderDetailsMap,
-    initOrders,
-    removeOrder,
-    addNewOrder,
-    initOrderDetails,
     dispatchGetOrders,
     dispatchGetOrderById,
+    dispatchCreateNewOrder,
+    dispatchUpdateOrder,
+    dispatchDeleteOrder,
   };
 });

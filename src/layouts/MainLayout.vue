@@ -1,12 +1,10 @@
 <template>
   <q-layout view="hhh LpR lfr">
 
-  <div>
-
     <q-tabs
       dense
       align="left"
-      class="bg-indigo text-grey-2"
+      class="bg-indigo text-grey-2 row justify-start"
       inline-label
       active-color="white"
     >
@@ -29,28 +27,37 @@
           class="q-ml-md"
         />
       </q-route-tab>
+
+      <q-btn
+        class="self-right bg-grey-2 text-indigo q-ma-sm q-ml-auto"
+        flat
+        @click="onNewOrderClick"
+        label="Create order"
+      />
     </q-tabs>
 
     <q-page-container style="max-width: 1280px; margin: auto; margin-top: 2rem;">
       <router-view :key="$route.fullPath"></router-view>
     </q-page-container>
 
-  </div>
-
   </q-layout>
 </template>
 
 <script lang="ts">
 
-import { useTabsStore } from 'src/stores/tabs';
+import { useTabsStore, Tab } from 'src/stores/tabs';
 import { useRouter } from 'vue-router';
-import { Tab } from '../stores/tabs';
+import { useOrderStore } from 'src/stores/orders';
+import { onMounted } from 'vue';
 
 export default {
 
   setup() {
-    const { tabs, removeTabByName } = useTabsStore();
+    const { tabs, removeTabByName, addNewTab } = useTabsStore();
+    const { dispatchGetOrders } = useOrderStore();
     const router = useRouter();
+
+    onMounted(dispatchGetOrders);
 
     function closeTab(name: Tab['name']) {
       const path = router.currentRoute.value.fullPath;
@@ -60,10 +67,21 @@ export default {
       removeTabByName(name);
     }
 
+    function onNewOrderClick() {
+      const tabName = '/orders/new';
+      addNewTab({
+        name: tabName,
+        label: 'New order',
+        closable: true,
+      });
+      router.push(tabName);
+    }
+
     return {
       tabs,
       router,
       closeTab,
+      onNewOrderClick,
     };
   },
 };

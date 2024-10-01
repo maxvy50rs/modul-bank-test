@@ -16,7 +16,8 @@
       :columns="columns"
       row-key="id"
       @row-click.stop="onRowClick"
-      >
+      :pagination="{ rowsPerPage: 10 }"
+    >
       <template v-slot:body-cell-state="props">
         <q-td :props="props">
           <div>
@@ -27,13 +28,22 @@
           </div>
         </q-td>
       </template>
+      <template v-slot:body-cell-do_delete="props">
+        <q-td :props="props">
+          <q-btn
+            icon="delete"
+            flat
+            size="0.6rem"
+            @click.prevent.stop="() => orderStore.dispatchDeleteOrder(props.row.id)"
+          />
+        </q-td>
+      </template>
     </q-table>
   </q-page>
 </template>
 
 <script>
 import { useOrderStore } from 'src/stores/orders';
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useTabsStore } from 'src/stores/tabs';
@@ -60,7 +70,7 @@ export default {
       {
         name: 'date',
         label: 'Date',
-        field: 'initiated_at',
+        field: 'dadd',
         sortable: true,
         format: (val) => new Date(val).toISOString()
           .split('T')
@@ -70,7 +80,7 @@ export default {
       {
         name: 'client',
         label: 'Client',
-        field: 'client_name',
+        field: (row) => row.client_name ?? row.person_fullname,
         sortable: true,
       },
       {
@@ -86,6 +96,11 @@ export default {
         sortable: false,
         format: (val) => `+${val}`,
       },
+      {
+        name: 'do_delete',
+        style: 'width: 0.6rem',
+        headerStyle: 'width: 0.6rem',
+      },
     ];
 
     const stateToBadgeMap = new Map([
@@ -94,9 +109,8 @@ export default {
       ['progress', { label: 'WIP', color: 'orange' }],
     ]);
 
-    const store = useOrderStore();
-    onMounted(store.dispatchGetOrders);
-    const { orders } = storeToRefs(store);
+    const orderStore = useOrderStore();
+    const { orders } = storeToRefs(orderStore);
     const router = useRouter();
     const tabsStore = useTabsStore();
 
@@ -113,6 +127,7 @@ export default {
     return {
       columns,
       orders,
+      orderStore,
       stateToBadgeMap,
       onRowClick,
     };

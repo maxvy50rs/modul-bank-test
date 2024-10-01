@@ -31,8 +31,6 @@
 
     <q-form
       v-if="!!orderDetails"
-      @submit="onSubmit"
-      @reset="onReset"
       class="col-12 row justify-center items-start"
     >
 
@@ -43,7 +41,15 @@
         v-model="orderDetails.company_name"
         label="Company name *"
         lazy-rules
-        readonly
+        :rules="[ val => val && val.length > 0 || 'Please type something']"
+      />
+
+      <q-input
+        class="q-mb-sm"
+        filled
+        v-model="orderDetails.extra.partner.client_name"
+        label="Partner name *"
+        lazy-rules
         :rules="[ val => val && val.length > 0 || 'Please type something']"
       />
 
@@ -54,7 +60,6 @@
         :options="businessStructureList"
         label="Business structure"
         stack-label
-        readonly
       />
 
       <q-input
@@ -63,7 +68,6 @@
         type="number"
         v-model="orderDetails.inn"
         label="INN *"
-        readonly
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type INN',
@@ -77,7 +81,6 @@
         multiple
         :options="stgsList"
         label="Product(s)"
-        readonly
       />
     </div>
 
@@ -87,9 +90,8 @@
         filled
         v-model="orderDetails.person_fullname"
         label="Contact person *"
-        readonly
         lazy-rules
-        :rules="[ val => val && val.length > 0 || 'Please type something']"
+        :rules="[ val => val && val.length > 0 || 'Please type something' ]"
       />
 
       <q-input
@@ -99,48 +101,73 @@
         type="tel"
         label="Telephone number"
         stack-label
-        readonly
       />
 
       <q-input
-        class="q-mb-sm"
+        class="q-mb-lg"
         filled
         label="E-mail *"
         v-model="orderDetails.person_email"
-        readonly
         lazy-rules
         :rules="[
           (val) => validateEmail(val) || 'Please enter a valid email address'
         ]"
       />
+
+      <div class="row justify-end q-mt-xl">
+        <q-btn v-if="0" label="Reset" color="indigo" flat/>
+        <q-btn label="Submit" color="indigo" @click="onSubmit(orderDetails)"/>
+      </div>
     </div>
 
-      <div class="q-ml-auto q-pr-lg">
-        <q-btn label="Reset" type="reset" color="indigo" flat class="q-ml-sm" disabled/>
-        <q-btn label="Submit" type="submit" color="indigo" disabled/>
-      </div>
     </q-form>
     </q-page>
 
 </template>
 
 <script lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useOrderStore } from 'src/stores/orders';
+import { OrderExtended } from 'src/services/orders/types';
+import { useTabsStore } from 'src/stores/tabs';
 
 export default {
   setup() {
     const store = useOrderStore();
     const route = useRoute();
-    const orderId = ref(route.params.id as string);
-    onMounted(() => store.dispatchGetOrderById(orderId.value));
+    const router = useRouter();
+    const { removeTabByName } = useTabsStore();
+
+    const orderIdParam = route.params.id as string;
     const { orderDetailsMap } = storeToRefs(store);
+    function initOrderDetails(id: OrderExtended['id']) {
+      const now = new Date(Date.now());
+      if (id === 'new') {
+        return {
+          id: now.toISOString(),
+          num: Math.floor(now.getTime() * 1e-9),
+          dadd: now.toISOString(),
+          initiated_at: now.toISOString(),
+          state: 'init',
+          extra: {
+            partner: {
+              client_name: '',
+            },
+          },
+        } as unknown as OrderExtended;
+      }
+      return orderDetailsMap.value.get(id);
+    }
+    const orderDetails = ref();
+    onMounted(async () => {
+      if (orderIdParam !== 'new') await store.dispatchGetOrderById(orderIdParam);
+      orderDetails.value = initOrderDetails(orderIdParam);
+    });
 
     return {
-
-      orderDetails: computed(() => orderDetailsMap.value.get(orderId.value)),
+      orderDetails,
 
       stateToBadgeMap: new Map([
         ['init', { label: 'Initial', color: 'red' }],
@@ -156,7 +183,17 @@ export default {
 
       stgsList: ['ACCOPEN', 'FNS.REG'],
 
-      onSubmit() {},
+      onSubmit(payload: OrderExtended) {
+        // eslint-disable-next-line no-console
+        console.log(payload);
+        if (orderIdParam === 'new') {
+          store.dispatchCreateNewOrder(payload);
+        } else {
+          store.dispatchUpdateOrder(payload);
+        }
+        router.push('/orders');
+        removeTabByName('/orders/new');
+      },
 
       onReset() {},
     };
