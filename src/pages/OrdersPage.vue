@@ -34,7 +34,7 @@
             icon="delete"
             flat
             size="0.6rem"
-            @click.prevent.stop="() => orderStore.dispatchDeleteOrder(props.row.id)"
+            @click.prevent.stop="() => deleteOrder(props.row.id)"
           />
         </q-td>
       </template>
@@ -72,10 +72,9 @@ export default {
         label: 'Date',
         field: 'dadd',
         sortable: true,
-        format: (val) => new Date(val).toISOString()
-          .split('T')
-          .join(', ')
-          .slice(0, -8),
+        format: (val) => new Date(val).toLocaleString('en-GB')
+          .split('/')
+          .join('.'),
       },
       {
         name: 'client',
@@ -124,12 +123,18 @@ export default {
       router.push(tabName);
     }
 
+    function deleteOrder(id) {
+      orderStore.dispatchDeleteOrder(id);
+      tabsStore.removeTabByName(`/orders/${id}`);
+    }
+
     return {
       columns,
       orders,
       orderStore,
       stateToBadgeMap,
       onRowClick,
+      deleteOrder,
     };
   },
 };

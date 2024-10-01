@@ -18,10 +18,9 @@
       <q-badge
         outline
         color="orange"
-        :label="new Date(orderDetails.dadd).toISOString()
-          .split('T')
-          .join(', ')
-          .slice(0, -8)"
+        :label="new Date(orderDetails.dadd).toLocaleString('en-GB')
+          .split('/')
+          .join('.')"
         />
         <q-badge
           :color="stateToBadgeMap.get(orderDetails.state)?.color"
@@ -32,6 +31,8 @@
     <q-form
       v-if="!!orderDetails"
       class="col-12 row justify-center items-start"
+      @submit="onSubmit(orderDetails)"
+      greedy
     >
 
     <div class="col-6 q-px-lg q-pb-xl">
@@ -60,6 +61,10 @@
         :options="businessStructureList"
         label="Business structure"
         stack-label
+        lazy-rules
+        :rules="[
+          val => !!val || 'Please choose a form'
+        ]"
       />
 
       <q-input
@@ -71,7 +76,7 @@
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Please type INN',
-          val => val.toString().split('').length === 12  || 'Please type 12 digits'
+          val => `${val}`.split('').length === 12  || 'Please type 12 digits'
         ]"
       />
 
@@ -81,6 +86,10 @@
         multiple
         :options="stgsList"
         label="Product(s)"
+        lazy-rules
+        :rules="[
+          val => Array.isArray(val) || 'Please choose at least one'
+        ]"
       />
     </div>
 
@@ -101,6 +110,10 @@
         type="tel"
         label="Telephone number"
         stack-label
+        lazy-rules
+        :rules="[
+          val => validatePhone(val) || 'Please use 7xxxxxxxxxx format'
+        ]"
       />
 
       <q-input
@@ -116,7 +129,7 @@
 
       <div class="row justify-end q-mt-xl">
         <q-btn v-if="0" label="Reset" color="indigo" flat/>
-        <q-btn label="Submit" color="indigo" @click="onSubmit(orderDetails)"/>
+        <q-btn label="Submit" color="indigo" type="submit"/>
       </div>
     </div>
 
@@ -149,7 +162,6 @@ export default {
           id: now.toISOString(),
           num: Math.floor(now.getTime() * 1e-9),
           dadd: now.toISOString(),
-          initiated_at: now.toISOString(),
           state: 'init',
           extra: {
             partner: {
@@ -176,7 +188,11 @@ export default {
       ]),
 
       validateEmail(email: string) {
-        return /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/.test(email);
+        return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
+      },
+
+      validatePhone(number: string) {
+        return /[7]\d{10}/.test(number);
       },
 
       businessStructureList: ['UL', 'IP'],
