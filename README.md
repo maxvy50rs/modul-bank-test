@@ -1,33 +1,15 @@
-# Accounts and Orders (modul-bank-test)
+## Stack:
+vue3, quasar2, typescript, vue-router, pinia, vite, es-lint(airbnb)
 
-A Quasar Project
+## Features:
+- навигация по приложению через систему вкладок
+- связь навигации и роутинга
+- сохранение состояния приложения в localStorage
+- 2 вкладки "по умолчанию": список заявок, список встреч
+- изменение, удаление, добавление заявок
+- валидация данных при отправке формы создания заявки
 
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
-
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
-
-
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+## Места для улучшения:
+- более детализированная валидация данных при создании заявки (например, валидировать по событию onInput, а не onSubmit)
+- роутинг+вкладки: сохранение истории навигации, и ее использование при закрытии активной вкладки
+- ...
